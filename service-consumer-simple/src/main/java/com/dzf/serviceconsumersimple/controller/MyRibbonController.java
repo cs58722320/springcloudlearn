@@ -1,12 +1,15 @@
 package com.dzf.serviceconsumersimple.controller;
 
+import com.dzf.common.vo.StudentVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * 名称：<br>
@@ -25,6 +28,7 @@ public class MyRibbonController {
 
     @Autowired
     private LoadBalancerClient loadBalancerClient;
+    private StudentVo student;
 
     /**
      * service-provider-simple
@@ -44,6 +48,68 @@ public class MyRibbonController {
     @RequestMapping(value = "/ribbon/query/user/{id}")
     public String ribbonQueryUser(@PathVariable("id") String id) {
         return restTemplate.getForEntity("http://service-provider-user/query/user/" + id, String.class).getBody();
+    }
+
+    /**
+     * Ribbon Client Sample
+     * String param
+     *
+     * @Param value
+     * @Return String
+     */
+    @RequestMapping(value = "/ribbon/get/string/{value}")
+    public String ribbonGetByStringParam(@PathVariable("value") String value) {
+        return restTemplate.getForEntity("http://service-provider-simple/ribbon/get/string?value={1}", String.class, value).getBody();
+    }
+
+    /**
+     * Ribbon Client Sample
+     * Map param
+     *
+     * @Param map
+     * @Return String
+     */
+    @RequestMapping(value = "/ribbon/get/map/{value}")
+    public String ribbonGetByMapParam(@PathVariable("value") String value) {
+        Map<String, String> mapValue = new LinkedHashMap();
+        mapValue.put("value", value);
+        return restTemplate.getForEntity("http://service-provider-simple/ribbon/get/map?value={value}", String.class, mapValue).getBody();
+    }
+
+    /**
+     * Ribbon Client Sample
+     * POST for entity
+     *
+     * @Param studentVo
+     * @Return studentVo
+     */
+    @RequestMapping(value = "/ribbon/post/entity")
+    public StudentVo ribbonPostForEntity(@RequestBody StudentVo student) {
+        System.out.println(student);
+        return restTemplate.postForEntity("http://service-provider-simple/ribbon/post/entity", student, StudentVo.class).getBody();
+    }
+
+    /**
+     * Ribbon Client Sample
+     * PUT
+     * @Param id
+     */
+    @RequestMapping(value = "/ribbon/put/{id}")
+    public void ribbonPut(@PathVariable("id") String id) {
+        System.out.println(id);
+        StudentVo student = new StudentVo();
+        restTemplate.put("http://service-provider-simple/ribbon/put", student, id);
+    }
+
+    /**
+     * Ribbon Client Sample
+     * DELETE
+     * @Param id
+     */
+    @RequestMapping(value = "/ribbon/delte")
+    public void ribbonDelete(){
+        Long id=10000000000L;
+        restTemplate.delete("http://EUREKA-CLIENT1/deleteUser/{1}",id);
     }
 
     /**
